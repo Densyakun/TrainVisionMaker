@@ -1,4 +1,4 @@
-#tv-border {
+#top {
   position: fixed;
   background-color: rgb(247,247,247);
   left: 0;
@@ -28,7 +28,7 @@ body {
 }
 h3 {
   margin: 0;
-  background-color: rgb(247,247,247);
+  background-color: rgb(239,239,239);
   border-top: solid 1px #BFBFBF;
   border-bottom: solid 1px #BFBFBF;
 }
@@ -37,14 +37,19 @@ h3 {
 }
 #menu {
   position: relative;
-  top: 450px;
+  top: 480px;
   z-index: 0;
+  margin-left: 4px;
+  margin-right: 4px;
 }
 #footer {
+  background-color: rgb(247,247,247);
   position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
-  font-size: 0.75em;
+  border-top: solid 1px #BFBFBF;
+  padding: 4px;
+  font-size: 0.8em;
   z-index: 1;
 }
