@@ -1,5 +1,10 @@
+@import url("https://fonts.googleapis.com/earlyaccess/notosansjapanese.css");
+@media screen and (max-width: 480px) {
+  body {
+    font-size: 2em;
+  }
+}
 #top {
-  position: fixed;
   background-color: rgb(251,247,223);
   left: 0;
   right: 0;
@@ -8,10 +13,10 @@
   z-index: 1;
 }
 #trainvision {
-  background-color: rgb(0,0,0);
-  border: solid 1px #BFBFBF;
-  width: 640px;
-  height: 384px;
+  background-color: #202020;
+  text-align: center;
+  color: #fff;
+  border: solid 2px #202020;
   position: relative;
   margin: auto;
   margin-top: 32px;
@@ -24,7 +29,6 @@ canvas {
 }
 body {
   margin: 0;
-  background-color: rgb(255,255,255);
 }
 h3 {
   margin: 0;
@@ -35,16 +39,14 @@ h3 {
 .border-line {
   border-bottom: solid 1px #BFBFBF;
 }
-#menu {
-  position: relative;
-  top: 480px;
+.menu {
   z-index: 0;
-  margin-left: 4px;
-  margin-right: 4px;
+  padding-left: 4px;
+  padding-right: 4px;
+  background-color: rgb(251,251,251);
 }
 #footer {
   background-color: rgb(247,247,247);
-  position: fixed;
   left: 0;
   right: 0;
   bottom: 0;

@@ -7,33 +7,38 @@
 </head>
 <body>
 
-<!--trainvision:-->
 <div id="top">
-<div style="font-size:1.5em;float:left;margin:4px;">TrainVisionMaker</div>
-<div id="trainvision"></div>
+<div style="font-size:1.5em;padding:4px;">TrainVisionMaker</div>
+<div id="trainvision">Now loading...</div>
+</div>
+
+<h3>News:</h3>
+<div class="menu">
+<ul><li>現在、三菱のトレインビジョン（初期型）を開発中です。</li></ul>
+</div>
+
 <h3>Settings:</h3>
+<div class="menu">
+
+<div style="padding-top: 1em;padding-bottom: 2em;">
+<table>
+<tr>
+<td style="text-align:right;">行先・方面:</td>
+<td><input type="text" id="for-ja-input"></input></td>
+</tr>
+<tr>
+<td style="text-align:right;">駅名:</td>
+<td><input type="text" id="nextsta-ja-input"></input></td>
+</tr>
+<tr>
+<td style="text-align:right;"></td>
+<td><input type="button" id="next-phase-button"></td>
+</tr>
+</table>
 </div>
+<div style="width:100%; height:1px; margin:1px; background-color:#808080;"></div>
 
-<!--menu:-->
-<div id="menu">
-
-<div style="padding: 32px;">
-設定1<br>
-設定2<br>
-設定3<br>
-設定4<br>
-設定5<br>
-</div>
-
-<div style="padding: 32px;">
-設定1<br>
-設定2<br>
-設定3<br>
-設定4<br>
-設定5<br>
-</div>
-
-<div style="padding: 32px;">
+<div style="padding-top: 1em;padding-bottom: 2em;">
 設定1<br>
 設定2<br>
 設定3<br>
@@ -44,6 +49,8 @@
 </div>
 
 <div id="footer">Created by Densyakun. 2018-</div>
+
+<script src="js/tvm-vision.js"></script>
 
 </body>
 </html>
