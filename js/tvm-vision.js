@@ -36,11 +36,11 @@ var direction_checkbox;
 var direction = true;
 var last_direction = true;
 var next_phase_button;
-var phase = 0;
-var next_phase_button_labels = ["発車する", "減速する", "停車する"];
-var next_phase_button_label = next_phase_button_labels[phase];
-var sta0_ja_labels = ["ただいま", "次は", "まもなく"]
-var sta0_ja = sta0_ja_labels[phase];
+var stopping = true;
+var last_stopping = true;
+var arriving = false;
+var last_arriving = false;
+var sta0_ja = "ただいま";
 var sta_ja_input;
 var sta_ja = "鶯谷";
 
@@ -60,12 +60,17 @@ function tvm_init() {
 		sta_ja_input.value = sta_ja;
 		next_phase_button = document.getElementById('next-phase-button');
 		next_phase_button.addEventListener('click', function (event) {
-			phase++;
-			if (phase == 3)
-				phase = 0;
-			next_phase_button.value = next_phase_button_label = next_phase_button_labels[phase];
+			if (stopping) {
+				stopping = false;
+			} else if (arriving) {
+				arriving = false;
+				stopping = true;
+			} else {
+				arriving = true;
+			}
+			next_phase_button.value = (stopping ? "発車する" : arriving ? "停車する" : "減速する");
 		});
-		next_phase_button.value = next_phase_button_label;
+		next_phase_button.value = (stopping ? "発車する" : arriving ? "停車する" : "減速する");
 	}
 
 	width = 1024;
@@ -87,15 +92,17 @@ function tvm_tick() {
 		//TODO 急停車表示
 	}
 	header_tick++;
-	if (header_tick == 3) {
+	if (header_tick == 3 || stopping != last_stopping) {
 		header_tick = 0;
-		if (sta0_ja != sta0_ja_labels[phase])
+		if (stopping != last_stopping || arriving != last_arriving) {
+			sta0_ja = (stopping ? "ただいま" : arriving ? "まもなく" : "次は");
 			header_en = false;
-		else
+		} else
 			header_en = !header_en;
-		sta0_ja = sta0_ja_labels[phase];
 		last_direction = direction;
+		last_arriving = arriving;
 	}
+	last_stopping = stopping;
 	tvm_draw();
 
 	//clearInterval(interval_id);
@@ -147,7 +154,7 @@ function tvm_draw() {
 		tags.push('<text x="'+8*scale+'" y="'+32*scale
 		+'" fill="rgb(80,80,80)" font-family="Noto Sans Japanese" font-weight="500" font-size="'+for_fontsize*scale
 		+'px" dy="'+for_fontsize*0.37*scale+'">'
-		+for_ja+(last_direction?"行":"行き")+'</text>');
+		+for_ja+(last_direction?"方面行":"行き")+'</text>');
 
 		tags.push('<text x="'+(width-16)*scale+'" y="'+(16+carno_width)*scale
 		+'" fill="rgb(48,48,48)" font-family="Noto Sans Japanese" font-weight="500" font-size="'+carno_text_fontsize*scale
