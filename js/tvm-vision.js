@@ -10,28 +10,41 @@ var height = 0;
 //Mitsubishi
 var header_color = "rgb(207,207,207)";
 var header_height = 236;
-var for_fontsize = 38;
+var for_ja_fontsize = 38;
+var for_en_fontsize = 37;
 var carno_width = 80;
 var carno_radius = 16;
 var carno_fontsize = 64;
 var carno_text_fontsize = 28;
-var next_text_fontsize = 48;
-var border_color0 = "rgb(128,128,128)";
-var border_color1 = "rgb(96,96,96)";
+var text_color0 = "rgb(64,64,64)";
+var text_color1 = "rgb(88,88,88)";
+var next_text_ja_fontsize = 48;
+var next_text_en_fontsize = 56;
+var border_color0 = "rgb(96,96,96)";
+var border_color1 = "rgb(128,128,128)";
 var border_width = 4;
-var nextsta_color = "rgb(154,205,50)";
-var nextsta_width = 498;
-var nextsta_height = 160;
-var nextsta_fontsize = 156;
+var sta_color = "rgb(154,205,50)";
+var sta_width = 498;
+var sta_height = 160;
+var sta_ja_fontsize = 156;
+var sta_en_fontsize = 120;
+var sta_text_ja_width = sta_width - 32;
+var sta_text_en_width = sta_width - 16;
 var bg_color = "rgb(239,239,239)";
+
+var font_ja = "Noto Sans Japanese";
+var font_en = "Noto Sans Japanese";
 
 var header_tick = 0;
 var header_en = false;
+var header_hiragana = false;
 var timeout_id;
 
 var carno = 10;
 var for_ja_input;
-var for_ja = "上野・東京";
+var for_ja = "品川･渋谷";
+var for_en_input;
+var for_en = "Shinagawa & Shibuya";
 var direction_checkbox;
 var direction = true;
 var last_direction = true;
@@ -40,9 +53,15 @@ var stopping = true;
 var last_stopping = true;
 var arriving = false;
 var last_arriving = false;
+var forinfo_tick = 0;
 var sta0_ja = "ただいま";
+var sta0_hiragana = "ただいま";
 var sta_ja_input;
-var sta_ja = "鶯谷";
+var sta_ja = "東京";
+var sta_en_input;
+var sta_en = "Tōkyō";
+var sta_hiragana_input;
+var sta_hiragana = "とうきょう";
 
 window.addEventListener('DOMContentLoaded', function () {tvm_init();});
 
@@ -52,16 +71,27 @@ function tvm_init() {
 		for_ja_input = document.getElementById('for-ja-input');
 		for_ja_input.addEventListener('input', function (event) {for_ja = for_ja_input.value;tvm_draw();});
 		for_ja_input.value = for_ja;
+		for_en_input = document.getElementById('for-en-input');
+		for_en_input.addEventListener('input', function (event) {for_en = for_en_input.value;tvm_draw();});
+		for_en_input.value = for_en;
 		direction_checkbox = document.getElementById('direction-checkbox');
 		direction_checkbox.addEventListener('change', function () {direction = direction_checkbox.checked;});
 		direction_checkbox.checked = direction;
 		sta_ja_input = document.getElementById('nextsta-ja-input');
 		sta_ja_input.addEventListener('input', function (event) {sta_ja = sta_ja_input.value;tvm_draw();});
 		sta_ja_input.value = sta_ja;
+		sta_en_input = document.getElementById('nextsta-en-input');
+		sta_en_input.addEventListener('input', function (event) {sta_en = sta_en_input.value;tvm_draw();});
+		sta_en_input.value = sta_en;
+		sta_hiragana_input = document.getElementById('nextsta-hiragana-input');
+		sta_hiragana_input.addEventListener('input', function (event) {sta_hiragana = sta_hiragana_input.value;tvm_draw();});
+		sta_hiragana_input.value = sta_hiragana;
 		next_phase_button = document.getElementById('next-phase-button');
 		next_phase_button.addEventListener('click', function (event) {
 			if (stopping) {
 				stopping = false;
+				if (sta_ja != "東京")
+					forinfo_tick = 6;
 			} else if (arriving) {
 				arriving = false;
 				stopping = true;
@@ -96,13 +126,24 @@ function tvm_tick() {
 		header_tick = 0;
 		if (stopping != last_stopping || arriving != last_arriving) {
 			sta0_ja = (stopping ? "ただいま" : arriving ? "まもなく" : "次は");
+			sta0_hiragana = (stopping ? "ただいま" : arriving ? "まもなく" : "つぎは");
 			header_en = false;
-		} else
-			header_en = !header_en;
+			header_hiragana = false;
+		} else {
+			if (header_en) {
+				header_en = false;
+				header_hiragana = true;
+			} else if (header_hiragana)
+				header_hiragana = false;
+			else
+				header_en = true;
+		}
 		last_direction = direction;
 		last_arriving = arriving;
 	}
 	last_stopping = stopping;
+	if (forinfo_tick > 0)
+		forinfo_tick--;
 	tvm_draw();
 
 	//clearInterval(interval_id);
@@ -134,49 +175,126 @@ function tvm_draw() {
 	+'px" text-anchor="middle" dominant-baseline="central" letter-spacing="-3">'
 	+carno+'</text>');
 
-	tags.push('<linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="'+border_color1
+	tags.push('<linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="'+border_color0
 	+'" /><stop offset="100%" stop-color="'+header_color
 	+'" /></linearGradient>');
 
-	tags.push('<rect x="'+(width/2-nextsta_width/2-border_width)*scale
+	tags.push('<rect x="'+(width/2-sta_width/2-border_width)*scale
 	+'" y="'+(64-border_width)*scale
-	+'" width="'+(nextsta_width+border_width*2)*scale
-	+'" height="'+(nextsta_height+border_width*2)*scale
+	+'" width="'+(sta_width+border_width*2)*scale
+	+'" height="'+(sta_height+border_width*2)*scale
 	+'" fill="url(#grad1)" />');
-	tags.push('<rect x="'+(width/2-nextsta_width/2)*scale
-	+'" y="'+64*scale+'" width="'+nextsta_width*scale
-	+'" height="'+nextsta_height*scale
+	tags.push('<rect x="'+(width/2-sta_width/2)*scale
+	+'" y="'+64*scale+'" width="'+sta_width*scale
+	+'" height="'+sta_height*scale
 	+'" fill="rgb(255,255,255)" />');
 
 	if (header_en) {
-		//TODO 英語表示
+		if (forinfo_tick > 0 || last_stopping && sta_en == "Tōkyō") {
+			tags.push('<text id="sta0_en" x="'+(width/2-sta_width/2-16)*scale+'" y="'+(64+sta_height-36)*scale
+			+'" fill="'+text_color0+'" font-family="'+font_en+'" font-weight="700" font-size="'+next_text_en_fontsize*scale
+			+'px" text-anchor="end">'+(last_direction?"Bound for":"For")+'</text>');
+
+			var b = for_en.indexOf('&');
+			if (b == -1)
+				tags.push('<text id="sta" x="'+width/2*scale
+				+'" y="'+(64+sta_height/2)*scale
+				+'" fill="'+sta_color+'" font-family="'+font_en+'" font-weight="700" font-size="'+sta_en_fontsize*scale
+				+'px" text-anchor="middle" dy="'+sta_en_fontsize*0.37*scale+'">'+for_en+'</text>');
+			else {
+				tags.push('<text id="sta" x="'+(width/2-sta_text_en_width/2)*scale
+				+'" y="'+(64+sta_height/2-sta_en_fontsize/3.4)*scale
+				+'" fill="'+sta_color+'" font-family="'+font_en+'" font-weight="700" font-size="'+sta_en_fontsize/1.7*scale
+				+'px" text-anchor="start" dy="'+(sta_en_fontsize/2)*0.37*scale+'">'+for_en.substr(0, b+1)+'</text>');
+				tags.push('<text id="sta1" x="'+(width/2+sta_text_en_width/2)*scale
+				+'" y="'+(64+sta_height/2+sta_en_fontsize/1.7-sta_en_fontsize/3.4)*scale
+				+'" fill="'+sta_color+'" font-family="'+font_en+'" font-weight="700" font-size="'+sta_en_fontsize/1.7*scale
+				+'px" text-anchor="end" dy="'+(sta_en_fontsize/2)*0.37*scale+'">'+for_en.substr(b+1)+'</text>');
+			}
+		} else {
+			tags.push('<text x="'+8*scale+'" y="'+32*scale
+			+'" fill="'+text_color1+'" font-family="'+font_en+'" font-weight="700" font-size="'+for_en_fontsize*scale
+			+'px" dy="'+for_en_fontsize*0.3*scale+'">'+(last_direction?"Bound for ":"For ")
+			+for_en+'</text>');
+
+			var a = '<text id="sta0_en" x="'+(width/2-sta_width/2-16)*scale
+			+'" y="'+(last_stopping?(64+sta_height-36-next_text_en_fontsize/2)*scale:(64+sta_height-36)*scale)
+			+'" fill="'+text_color0+'" font-family="'+font_en+'" font-weight="700" font-size="'+next_text_en_fontsize*scale
+			+'px" text-anchor="end">';
+			if (last_stopping)
+				a += 'Now<tspan dx="'+-80*scale
+				+'" dy="'+next_text_en_fontsize*scale
+				+'">Stopping at</tspan>';
+			else
+				a += arriving ? "Arriving at" : "Next";
+			tags.push(a+'</text>');
+
+			tags.push('<text id="sta" x="'+width/2*scale+'" y="'+(64+sta_height/2)*scale
+			+'" fill="'+sta_color+'" font-family="'+font_en+'" font-weight="700" font-size="'+sta_en_fontsize*scale
+			+'px" text-anchor="middle" dy="'+sta_en_fontsize*0.37*scale+'">'+sta_en+'</text>');
+		}
+
+		tags.push('<text x="'+(width-16-carno_width-4)*scale+'" y="'+16*scale
+		+'" fill="'+text_color0+'" font-family="'+font_en+'" font-weight="700" font-size="'+carno_text_fontsize*scale
+		+'px" text-anchor="end" dy="'+carno_text_fontsize*scale+'">Car No.</text>');
 	} else {
-		tags.push('<text x="'+8*scale+'" y="'+32*scale
-		+'" fill="rgb(80,80,80)" font-family="Noto Sans Japanese" font-weight="500" font-size="'+for_fontsize*scale
-		+'px" dy="'+for_fontsize*0.37*scale+'">'
-		+for_ja+(last_direction?"方面行":"行き")+'</text>');
+		if (forinfo_tick > 0 || last_stopping && sta_ja == "東京") {
+			tags.push('<text x="'+(width/2-sta_width/2-16)*scale+'" y="'+(64+sta_height-8)*scale
+			+'" fill="'+text_color0+'" font-family="'+font_ja+'" font-weight="600" font-size="'+next_text_ja_fontsize*scale
+			+'px" text-anchor="end">山手線</text>');
 
-		tags.push('<text x="'+(width-16)*scale+'" y="'+(16+carno_width)*scale
-		+'" fill="rgb(48,48,48)" font-family="Noto Sans Japanese" font-weight="500" font-size="'+carno_text_fontsize*scale
-		+'px" text-anchor="end" dy="'+carno_text_fontsize*scale+'">号車</text>');
+			tags.push('<text id="sta" x="'+width/2*scale+'" y="'+(64+sta_height/2)*scale
+			+'" fill="'+sta_color+'" font-family="'+font_ja+'" font-weight="500" font-size="'+sta_ja_fontsize*scale
+			+'px" text-anchor="middle" dy="'+sta_ja_fontsize*0.37*scale+'">'+for_ja+'</text>');
 
-		tags.push('<text x="'+(width/2-nextsta_width/2-16)*scale+'" y="'+(64+nextsta_height-8)*scale
-		+'" fill="rgb(48,48,48)" font-family="Noto Sans Japanese" font-weight="500" font-size="'+next_text_fontsize*scale
-		+'px" text-anchor="end">'+sta0_ja+'</text>');
+			tags.push('<text x="'+(width/2+sta_width/2+16)*scale+'" y="'+(64+sta_height-8)*scale
+			+'" fill="'+text_color0+'" font-family="'+font_ja+'" font-weight="600" font-size="'+next_text_ja_fontsize*scale
+			+'px">'+(last_direction?"方面行":"行き")+'</text>');
+		} else {
+			tags.push('<text x="'+8*scale+'" y="'+32*scale
+			+'" fill="'+text_color1+'" font-family="'+font_ja+'" font-weight="600" font-size="'+for_ja_fontsize*scale
+			+'px" dy="'+for_ja_fontsize*0.37*scale+'">'
+			+for_ja+(last_direction?"方面行":"行き")+'</text>');
 
-		tags.push('<text x="'+width/2*scale+'" y="'+(64+nextsta_height/2)*scale
-		+'" fill="'+nextsta_color+'" font-family="Noto Sans Japanese" font-weight="500" font-size="'+nextsta_fontsize*scale
-		+'px" text-anchor="middle" dy="'+nextsta_fontsize*0.37*scale+'">'+sta_ja+'</text>');
+			tags.push('<text x="'+(width-16)*scale+'" y="'+(16+carno_width)*scale
+			+'" fill="'+text_color0+'" font-family="'+font_ja+'" font-weight="600" font-size="'+carno_text_fontsize*scale
+			+'px" text-anchor="end" dy="'+carno_text_fontsize*scale+'">号車</text>');
 
-		tags.push('<text x="'+(width/2+nextsta_width/2+16)*scale+'" y="'+(64+nextsta_height-8)*scale
-		+'" fill="rgb(48,48,48)" font-family="Noto Sans Japanese" font-weight="500" font-size="'+next_text_fontsize*scale
-		+'px">です。</text>');
+			tags.push('<text x="'+(width/2+sta_width/2+16)*scale+'" y="'+(64+sta_height-8)*scale
+			+'" fill="'+text_color0+'" font-family="'+font_ja+'" font-weight="600" font-size="'+next_text_ja_fontsize*scale
+			+'px">です。</text>');
+			if (header_hiragana) {
+				tags.push('<text x="'+(width/2-sta_width/2-16)*scale+'" y="'+(64+sta_height-8)*scale
+				+'" fill="'+text_color0+'" font-family="'+font_ja+'" font-weight="600" font-size="'+next_text_ja_fontsize*scale
+				+'px" text-anchor="end">'+sta0_hiragana+'</text>');
+
+				tags.push('<text id="sta" x="'+width/2*scale+'" y="'+(64+sta_height/2)*scale
+				+'" fill="'+sta_color+'" font-family="'+font_ja+'" font-weight="500" font-size="'+sta_ja_fontsize*scale
+				+'px" text-anchor="middle" dy="'+sta_ja_fontsize*0.37*scale+'">'+sta_hiragana+'</text>');
+
+				tags.push('<text x="'+(width/2+sta_width/2+16)*scale+'" y="'+(64+sta_height-8)*scale
+				+'" fill="'+text_color0+'" font-family="'+font_ja+'" font-weight="600" font-size="'+next_text_ja_fontsize*scale
+				+'px">です。</text>');
+
+				tags.push('<text x="'+(width-16)*scale+'" y="'+(16+carno_width)*scale
+				+'" fill="'+text_color0+'" font-family="'+font_ja+'" font-weight="600" font-size="'+carno_text_fontsize*scale
+				+'px" text-anchor="end" dy="'+carno_text_fontsize*scale+'">号車</text>');
+			} else {
+				tags.push('<text x="'+(width/2-sta_width/2-16)*scale+'" y="'+(64+sta_height-8)*scale
+				+'" fill="'+text_color0+'" font-family="'+font_ja+'" font-weight="600" font-size="'+next_text_ja_fontsize*scale
+				+'px" text-anchor="end">'+sta0_ja+'</text>');
+
+				tags.push('<text id="sta" x="'+width/2*scale+'" y="'+(64+sta_height/2)*scale
+				+'" fill="'+sta_color+'" font-family="'+font_ja+'" font-weight="500" font-size="'+sta_ja_fontsize*scale
+				+'px" text-anchor="middle" dy="'+sta_ja_fontsize*0.37*scale+'">'+sta_ja+'</text>');
+			}
+		}
 	}
 
 	tags.push('<rect x="0" y="'+header_height*scale
 	+'" width="'+width*scale
 	+'" height="'+border_width*scale
-	+'" fill="'+border_color0+'" />');
+	+'" fill="'+border_color1+'" />');
 
 	tags.push('<rect x="0" y="'+(header_height+border_width)*scale
 	+'" width="'+width*scale
@@ -185,6 +303,33 @@ function tvm_draw() {
 
 	tags.push('</svg>');
 	containerNode.innerHTML = tags;
+
+	var e = document.getElementById('sta');
+	if (e) {
+		if (header_en) {
+			if (e.getBBox().width > sta_text_en_width*scale) {
+				e.setAttribute("textLength", sta_text_en_width*scale);
+				e.setAttribute("lengthAdjust", "spacingAndGlyphs");
+			}
+		} else if (e.getBBox().width > sta_text_ja_width*scale) {
+			e.setAttribute("textLength", sta_text_ja_width*scale);
+			e.setAttribute("lengthAdjust", "spacingAndGlyphs");
+		}
+	}
+
+	var e = document.getElementById('sta1');
+	if (e) {
+		if (e.getBBox().width > sta_text_en_width*scale) {
+			e.setAttribute("textLength", sta_text_en_width*scale);
+			e.setAttribute("lengthAdjust", "spacingAndGlyphs");
+		}
+	}
+
+	e = document.getElementById('sta0_en');
+	if (e && e.getBBox().width > (width/2-sta_width/2-border_width-32)*scale) {
+		e.setAttribute("textLength", (width/2-sta_width/2-border_width-32)*scale);
+		e.setAttribute("lengthAdjust", "spacingAndGlyphs");
+	}
 }
 
 function tvm_getLineColor(line) {
