@@ -29,9 +29,12 @@ var header_tick = 0;
 var header_en = false;
 var timeout_id;
 
-var for_ja_input;
-var for_ja = "上野・東京方面";
 var carno = 10;
+var for_ja_input;
+var for_ja = "上野・東京";
+var direction_checkbox;
+var direction = true;
+var last_direction = true;
 var next_phase_button;
 var phase = 0;
 var next_phase_button_labels = ["発車する", "減速する", "停車する"];
@@ -49,6 +52,9 @@ function tvm_init() {
 		for_ja_input = document.getElementById('for-ja-input');
 		for_ja_input.addEventListener('input', function (event) {for_ja = for_ja_input.value;tvm_draw();});
 		for_ja_input.value = for_ja;
+		direction_checkbox = document.getElementById('direction-checkbox');
+		direction_checkbox.addEventListener('change', function () {direction = direction_checkbox.checked;});
+		direction_checkbox.checked = direction;
 		sta_ja_input = document.getElementById('nextsta-ja-input');
 		sta_ja_input.addEventListener('input', function (event) {sta_ja = sta_ja_input.value;tvm_draw();});
 		sta_ja_input.value = sta_ja;
@@ -88,6 +94,7 @@ function tvm_tick() {
 		else
 			header_en = !header_en;
 		sta0_ja = sta0_ja_labels[phase];
+		last_direction = direction;
 	}
 	tvm_draw();
 
@@ -140,7 +147,7 @@ function tvm_draw() {
 		tags.push('<text x="'+8*scale+'" y="'+32*scale
 		+'" fill="rgb(80,80,80)" font-family="Noto Sans Japanese" font-weight="500" font-size="'+for_fontsize*scale
 		+'px" dy="'+for_fontsize*0.37*scale+'">'
-		+for_ja+'行</text>');
+		+for_ja+(last_direction?"行":"行き")+'</text>');
 
 		tags.push('<text x="'+(width-16)*scale+'" y="'+(16+carno_width)*scale
 		+'" fill="rgb(48,48,48)" font-family="Noto Sans Japanese" font-weight="500" font-size="'+carno_text_fontsize*scale
