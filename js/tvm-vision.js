@@ -30,6 +30,7 @@ var sta_ja_fontsize = 156;
 var sta_en_fontsize = 120;
 var sta_text_ja_width = sta_width - 32;
 var sta_text_en_width = sta_width - 16;
+var sta_text_hiragana_width = sta_width;
 var bg_color = "rgb(239,239,239)";
 
 var font_ja = "Noto Sans Japanese";
@@ -259,7 +260,7 @@ function tvm_draw() {
 
 				tags.push('<text id="sta" x="'+width/2*scale+'" y="'+(64+sta_height/2)*scale
 				+'" fill="'+sta_color+'" font-family="'+font_ja+'" font-weight="500" font-size="'+sta_ja_fontsize*scale
-				+'px" text-anchor="middle" dy="'+sta_ja_fontsize*0.37*scale+'">'+sta_hiragana+'</text>');
+				+'px" text-anchor="middle" letter-spacing="-12" dy="'+sta_ja_fontsize*0.37*scale+'">'+stalist_hiragana[0]+'</text>');
 			} else {
 				tags.push('<text x="'+(width/2-sta_width/2-16)*scale+'" y="'+(64+sta_height-8)*scale
 				+'" fill="'+text_color0+'" font-family="'+font_ja+'" font-weight="600" font-size="'+next_text_ja_fontsize*scale
