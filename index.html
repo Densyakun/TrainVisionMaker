@@ -37,19 +37,23 @@
 <div style="padding-top: 1em;padding-bottom: 2em;">
 <table>
 <tr>
-<td style="text-align:right;">行先:</td>
+<td style="text-align:right;">行先・方面:</td>
 <td><input type="text" id="for-ja-input"></input></td>
 <td><input type="text" id="for-en-input"></input></td>
 </tr>
 <tr>
 <td />
-<td><input type="checkbox" id="direction-checkbox" name="direction">方面</td>
+<td><input type="checkbox" id="loop-checkbox" name="loop">環状線</td>
 </tr>
-<tr>
-<td style="text-align:right;">駅名:</td>
-<td><input type="text" id="nextsta-ja-input"></input></td>
-<td><input type="text" id="nextsta-en-input"></input></td>
-<td><input type="text" id="nextsta-hiragana-input"></input></td>
+</table>
+</div>
+
+<div style="width:100%; height:1px; margin:1px; background-color:#808080;"></div>
+
+<div style="padding-top: 1em;padding-bottom: 2em;">
+<table>
+<tr><td style="text-align:right;vertical-align:text-top;">駅:</td>
+<td><table id="stalist-table"></table></td>
 </tr>
 </table>
 </div>

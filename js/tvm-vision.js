@@ -46,9 +46,9 @@ var for_ja_input;
 var for_ja = "品川･渋谷";
 var for_en_input;
 var for_en = "Shinagawa & Shibuya";
-var direction_checkbox;
-var direction = true;
-var last_direction = true;
+var loop_checkbox;
+var loop = true;
+var last_loop = true;
 var next_phase_button;
 var stopping = true;
 var last_stopping = true;
@@ -57,12 +57,11 @@ var last_arriving = false;
 var forinfo_tick = 0;
 var sta0_ja = "ただいま";
 var sta0_hiragana = "ただいま";
-var sta_ja_input;
-var sta_ja = "東京";
-var sta_en_input;
-var sta_en = "Tōkyō";
-var sta_hiragana_input;
-var sta_hiragana = "とうきょう";
+
+var stalist_table;
+var stalist_ja = ["東京", "有楽町", "新橋", "浜松町", "田町", "品川", "大崎", "五反田", "目黒", "恵比寿", "渋谷", "原宿", "代々木", "新宿", "新大久保", "高田馬場", "目白", "池袋", "大塚", "巣鴨", "駒込", "田端", "西日暮里", "日暮里", "鶯谷", "上野", "御徒町", "秋葉原", "神田"];
+var stalist_en = ["Tōkyō", "Yūrakuchō", "Shimbashi", "Hamamatsuchō", "Tamachi", "Shinagawa", "Ōsaki", "Gotanda", "Meguro", "Ebisu", "Shibuya", "Harajuku", "Yoyogi", "Shinjuku", "Shin-Ōkubo", "Takadanobaba", "Mejiro", "Ikebukuro", "Ōtsuka", "Sugamo", "Komagome", "Tabata", "Nishi-Nippori", "Nippori", "Uguisudani", "Ueno", "Okachimachi", "Akihabara", "Kanda"];
+var stalist_hiragana = ["とうきょう", "ゆうらくちょう", "しんばし", "はままつちょう", "たまち", "しながわ", "おおさき", "ごたんだ", "めぐろ", "えびす", "しぶや", "はらじゅく", "よよぎ", "しんじゅく", "しんおおくぼ", "たかだのばば", "めじろ", "いけぶくろ", "おおつか", "すがも", "こまごめ", "たばた", "にしにっぽり", "にっぽり", "うぐいすだに", "うえの", "おかちまち", "あきはばら", "かんだ"];
 
 window.addEventListener('DOMContentLoaded', function () {tvm_init();});
 
@@ -70,38 +69,31 @@ function tvm_init() {
 	if (containerNode == null) {
 		containerNode = document.querySelector('#trainvision');
 		for_ja_input = document.getElementById('for-ja-input');
-		for_ja_input.addEventListener('input', function (event) {for_ja = for_ja_input.value;tvm_draw();});
+		for_ja_input.addEventListener('input', function () {for_ja = for_ja_input.value;tvm_draw();});
 		for_ja_input.value = for_ja;
 		for_en_input = document.getElementById('for-en-input');
-		for_en_input.addEventListener('input', function (event) {for_en = for_en_input.value;tvm_draw();});
+		for_en_input.addEventListener('input', function () {for_en = for_en_input.value;tvm_draw();});
 		for_en_input.value = for_en;
-		direction_checkbox = document.getElementById('direction-checkbox');
-		direction_checkbox.addEventListener('change', function () {direction = direction_checkbox.checked;});
-		direction_checkbox.checked = direction;
-		sta_ja_input = document.getElementById('nextsta-ja-input');
-		sta_ja_input.addEventListener('input', function (event) {sta_ja = sta_ja_input.value;tvm_draw();});
-		sta_ja_input.value = sta_ja;
-		sta_en_input = document.getElementById('nextsta-en-input');
-		sta_en_input.addEventListener('input', function (event) {sta_en = sta_en_input.value;tvm_draw();});
-		sta_en_input.value = sta_en;
-		sta_hiragana_input = document.getElementById('nextsta-hiragana-input');
-		sta_hiragana_input.addEventListener('input', function (event) {sta_hiragana = sta_hiragana_input.value;tvm_draw();});
-		sta_hiragana_input.value = sta_hiragana;
+		loop_checkbox = document.getElementById('loop-checkbox');
+		loop_checkbox.addEventListener('change', function () {loop = loop_checkbox.checked;});
+		loop_checkbox.checked = loop;
+
 		next_phase_button = document.getElementById('next-phase-button');
-		next_phase_button.addEventListener('click', function (event) {
+		next_phase_button.addEventListener('click', function () {
 			if (stopping) {
-				stopping = false;
-				if (sta_ja != "東京")
-					forinfo_tick = 6;
+				tvm_departure();
 			} else if (arriving) {
-				arriving = false;
-				stopping = true;
+				tvm_stopping();
 			} else {
-				arriving = true;
+				tvm_arriving();
 			}
 			next_phase_button.value = (stopping ? "発車する" : arriving ? "停車する" : "減速する");
 		});
 		next_phase_button.value = (stopping ? "発車する" : arriving ? "停車する" : "減速する");
+		next_phase_button.disabled = stalist_ja.length == 1;
+
+		stalist_table = document.getElementById('stalist-table');
+		tvm_stalist_0();
 	}
 
 	width = 1024;
@@ -139,7 +131,7 @@ function tvm_tick() {
 			else
 				header_en = true;
 		}
-		last_direction = direction;
+		last_loop = loop;
 		last_arriving = arriving;
 	}
 	last_stopping = stopping;
@@ -187,10 +179,10 @@ function tvm_draw() {
 	+'" fill="rgb(255,255,255)" />');
 
 	if (header_en) {
-		if (forinfo_tick >= 0 || last_stopping && sta_en == "Tōkyō") {
+		if (forinfo_tick >= 0 || last_stopping && stalist_en[0] == "Tōkyō") {
 			tags.push('<text id="sta0_en" x="'+(width/2-sta_width/2-16)*scale+'" y="'+(64+sta_height-36)*scale
 			+'" fill="'+text_color0+'" font-family="'+font_en+'" font-weight="700" font-size="'+next_text_en_fontsize*scale
-			+'px" text-anchor="end">'+(last_direction?"Bound for":"For")+'</text>');
+			+'px" text-anchor="end">'+(last_loop?"Bound for":"For")+'</text>');
 
 			var b = for_en.indexOf('&');
 			if (b == -1)
@@ -211,7 +203,7 @@ function tvm_draw() {
 		} else {
 			tags.push('<text x="'+8*scale+'" y="'+32*scale
 			+'" fill="'+text_color1+'" font-family="'+font_en+'" font-weight="700" font-size="'+for_en_fontsize*scale
-			+'px" dy="'+for_en_fontsize*0.3*scale+'">'+(last_direction?"Bound for ":"For ")
+			+'px" dy="'+for_en_fontsize*0.3*scale+'">'+(last_loop?"Bound for ":"For ")
 			+for_en+'</text>');
 
 			var a = '<text id="sta0_en" x="'+(width/2-sta_width/2-16)*scale
@@ -228,14 +220,14 @@ function tvm_draw() {
 
 			tags.push('<text id="sta" x="'+width/2*scale+'" y="'+(64+sta_height/2)*scale
 			+'" fill="'+sta_color+'" font-family="'+font_en+'" font-weight="700" font-size="'+sta_en_fontsize*scale
-			+'px" text-anchor="middle" dy="'+sta_en_fontsize*0.37*scale+'">'+sta_en+'</text>');
+			+'px" text-anchor="middle" dy="'+sta_en_fontsize*0.37*scale+'">'+stalist_en[0]+'</text>');
 		}
 
 		tags.push('<text x="'+(width-16-carno_width-4)*scale+'" y="'+16*scale
 		+'" fill="'+text_color0+'" font-family="'+font_en+'" font-weight="700" font-size="'+carno_text_fontsize*scale
 		+'px" text-anchor="end" dy="'+carno_text_fontsize*scale+'">Car No.</text>');
 	} else {
-		if (forinfo_tick >= 0 || last_stopping && sta_ja == "東京") {
+		if (forinfo_tick >= 0 || last_stopping && stalist_ja[0] == "東京") {
 			tags.push('<text x="'+(width/2-sta_width/2-16)*scale+'" y="'+(64+sta_height-8)*scale
 			+'" fill="'+text_color0+'" font-family="'+font_ja+'" font-weight="600" font-size="'+next_text_ja_fontsize*scale
 			+'px" text-anchor="end">山手線</text>');
@@ -246,12 +238,12 @@ function tvm_draw() {
 
 			tags.push('<text x="'+(width/2+sta_width/2+16)*scale+'" y="'+(64+sta_height-8)*scale
 			+'" fill="'+text_color0+'" font-family="'+font_ja+'" font-weight="600" font-size="'+next_text_ja_fontsize*scale
-			+'px">'+(last_direction?"方面行":"行き")+'</text>');
+			+'px">'+(last_loop?"方面行":"行き")+'</text>');
 		} else {
 			tags.push('<text x="'+8*scale+'" y="'+32*scale
 			+'" fill="'+text_color1+'" font-family="'+font_ja+'" font-weight="600" font-size="'+for_ja_fontsize*scale
 			+'px" dy="'+for_ja_fontsize*0.37*scale+'">'
-			+for_ja+(last_direction?"方面行":"行き")+'</text>');
+			+for_ja+(last_loop?"方面行":"行き")+'</text>');
 
 			if (header_hiragana) {
 				tags.push('<text x="'+(width/2-sta_width/2-16)*scale+'" y="'+(64+sta_height-8)*scale
@@ -268,7 +260,7 @@ function tvm_draw() {
 
 				tags.push('<text id="sta" x="'+width/2*scale+'" y="'+(64+sta_height/2)*scale
 				+'" fill="'+sta_color+'" font-family="'+font_ja+'" font-weight="500" font-size="'+sta_ja_fontsize*scale
-				+'px" text-anchor="middle" dy="'+sta_ja_fontsize*0.37*scale+'">'+sta_ja+'</text>');
+				+'px" text-anchor="middle" dy="'+sta_ja_fontsize*0.37*scale+'">'+stalist_ja[0]+'</text>');
 			}
 			tags.push('<text x="'+(width/2+sta_width/2+16)*scale+'" y="'+(64+sta_height-8)*scale
 			+'" fill="'+text_color0+'" font-family="'+font_ja+'" font-weight="600" font-size="'+next_text_ja_fontsize*scale
@@ -299,6 +291,11 @@ function tvm_draw() {
 				e.setAttribute("textLength", sta_text_en_width*scale);
 				e.setAttribute("lengthAdjust", "spacingAndGlyphs");
 			}
+		} else if (header_hiragana) {
+			if (e.getBBox().width > sta_text_hiragana_width*scale) {
+				e.setAttribute("textLength", sta_text_hiragana_width*scale);
+				e.setAttribute("lengthAdjust", "spacingAndGlyphs");
+			}
 		} else if (e.getBBox().width > sta_text_ja_width*scale) {
 			e.setAttribute("textLength", sta_text_ja_width*scale);
 			e.setAttribute("lengthAdjust", "spacingAndGlyphs");
@@ -318,6 +315,134 @@ function tvm_draw() {
 		e.setAttribute("textLength", (width/2-sta_width/2-border_width-32)*scale);
 		e.setAttribute("lengthAdjust", "spacingAndGlyphs");
 	}
+}
+
+function tvm_departure() {
+	stopping = false;
+	if (stalist_ja[0] != "東京")
+		forinfo_tick = 6;
+
+	if (loop) {
+		stalist_ja.push(stalist_ja[0]);
+		stalist_en.push(stalist_en[0]);
+		stalist_hiragana.push(stalist_hiragana[0]);
+	}
+	stalist_ja.shift();
+	stalist_en.shift();
+	stalist_hiragana.shift();
+	tvm_stalist_0();
+}
+
+function tvm_stopping() {
+	arriving = false;
+	stopping = true;
+
+	if (stalist_ja.length == 1)
+		next_phase_button.disabled = true;
+}
+
+function tvm_arriving() {
+	arriving = true;
+}
+
+function tvm_add_station_button(n = -1) {
+	if (n == -1) {
+		stalist_ja.push("");
+		stalist_en.push("");
+		stalist_hiragana.push("");
+	} else {
+		stalist_ja.splice(n, 0, "");
+		stalist_en.splice(n, 0, "");
+		stalist_hiragana.splice(n, 0, "");
+	}
+
+	tvm_stalist_0();
+	tvm_draw();
+}
+
+function tvm_remove_station_button(n) {
+	stalist_ja.splice(n, 1);
+	stalist_en.splice(n, 1);
+	stalist_hiragana.splice(n, 1);
+
+	if (!stalist_ja.length) {
+		stalist_ja.push("");
+		stalist_en.push("");
+		stalist_hiragana.push("");
+	}
+
+	tvm_stalist_0();
+	tvm_draw();
+}
+
+function tvm_stalist_0() {
+	stalist_table.innerHTML = null;
+	for (a = 0; a < stalist_ja.length; a++) {
+		tr = document.createElement('tr');
+		td = document.createElement('td');
+		input = document.createElement('input');
+		input.type = 'text';
+		input.addEventListener('input', function () {tvm_stalist_1();});
+		input.value = stalist_ja[a];
+		td.appendChild(input);
+		tr.appendChild(td);
+		td = document.createElement('td');
+		input = document.createElement('input');
+		input.type = 'text';
+		input.addEventListener('input', function () {tvm_stalist_1();});
+		input.value = stalist_en[a];
+		td.appendChild(input);
+		tr.appendChild(td);
+		td = document.createElement('td');
+		input = document.createElement('input');
+		input.type = 'text';
+		input.addEventListener('input', function () {tvm_stalist_1();});
+		input.value = stalist_hiragana[a];
+		td.appendChild(input);
+		tr.appendChild(td);
+		td = document.createElement('td');
+		input = document.createElement('input');
+		input.type = 'button';
+		input.id = 'remove_sta,'+a;
+		input.addEventListener('click', function (event) {tvm_remove_station_button(event.currentTarget.id.split(',')[1]);});
+		input.value = "-";
+		td.appendChild(input);
+		tr.appendChild(td);
+		td = document.createElement('td');
+		input = document.createElement('input');
+		input.type = 'button';
+		input.id = 'add_sta,'+a;
+		input.addEventListener('click', function (event) {tvm_add_station_button(event.currentTarget.id.split(',')[1]);});
+		input.value = "+";
+		td.appendChild(input);
+		tr.appendChild(td);
+		stalist_table.appendChild(tr);
+	}
+	tr = document.createElement('tr');
+	td = document.createElement('td');
+	input = document.createElement('input');
+	input.type = 'button';
+	input.id = 'add_sta';
+	input.addEventListener('click', function (event) {tvm_add_station_button();});
+	input.value = "+";
+	td.appendChild(input);
+	tr.appendChild(td);
+	stalist_table.appendChild(tr);
+}
+
+function tvm_stalist_1() {
+	a = stalist_table.childNodes;
+	stalist_ja = [a.length];
+	stalist_en = [a.length];
+	stalist_hiragana = [a.length];
+	for (b = 0; b < a.length; b++) {
+		stalist_ja[b] = a[b].childNodes[0].childNodes[0].value;
+		stalist_en[b] = a[b].childNodes[1].childNodes[0].value;
+		stalist_hiragana[b] = a[b].childNodes[2].childNodes[0].value;
+	}
+	next_phase_button.disabled = stalist_ja.length == 1;
+
+	tvm_draw();
 }
 
 function tvm_getLineColor(line) {
