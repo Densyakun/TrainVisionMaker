@@ -32,6 +32,7 @@ var sta_text_ja_width = sta_width - 32;
 var sta_text_en_width = sta_width - 16;
 var sta_text_hiragana_width = sta_width;
 var bg_color = "rgb(239,239,239)";
+var taketime_fontsize = 32;
 
 var font_ja = "Noto Sans Japanese";
 var font_en = "Noto Sans Japanese";
@@ -41,7 +42,7 @@ var header_en = false;
 var header_hiragana = false;
 var timeout_id;
 
-var carno = 10;
+var carno = 11;
 var for_ja_input;
 var for_ja = "品川･渋谷";
 var for_en_input;
@@ -62,6 +63,7 @@ var stalist_table;
 var stalist_ja = ["東京", "有楽町", "新橋", "浜松町", "田町", "品川", "大崎", "五反田", "目黒", "恵比寿", "渋谷", "原宿", "代々木", "新宿", "新大久保", "高田馬場", "目白", "池袋", "大塚", "巣鴨", "駒込", "田端", "西日暮里", "日暮里", "鶯谷", "上野", "御徒町", "秋葉原", "神田"];
 var stalist_en = ["Tōkyō", "Yūrakuchō", "Shimbashi", "Hamamatsuchō", "Tamachi", "Shinagawa", "Ōsaki", "Gotanda", "Meguro", "Ebisu", "Shibuya", "Harajuku", "Yoyogi", "Shinjuku", "Shin-Ōkubo", "Takadanobaba", "Mejiro", "Ikebukuro", "Ōtsuka", "Sugamo", "Komagome", "Tabata", "Nishi-Nippori", "Nippori", "Uguisudani", "Ueno", "Okachimachi", "Akihabara", "Kanda"];
 var stalist_hiragana = ["とうきょう", "ゆうらくちょう", "しんばし", "はままつちょう", "たまち", "しながわ", "おおさき", "ごたんだ", "めぐろ", "えびす", "しぶや", "はらじゅく", "よよぎ", "しんじゅく", "しんおおくぼ", "たかだのばば", "めじろ", "いけぶくろ", "おおつか", "すがも", "こまごめ", "たばた", "にしにっぽり", "にっぽり", "うぐいすだに", "うえの", "おかちまち", "あきはばら", "かんだ"];
+var taketimelist = [2, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 3, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
 
 window.addEventListener('DOMContentLoaded', function () {tvm_init();});
 
@@ -157,10 +159,10 @@ function tvm_draw() {
 	+'" height="'+carno_width*scale
 	+'" rx="'+carno_radius*scale
 	+'" ry="'+carno_radius*scale
-	+'" fill="rgb(255,255,255)" />');
+	+'" fill="white" />');
 
-	tags.push('<text x="'+(width-16-carno_width/2)*scale+'" y="'+(16+carno_width/2)*scale
-	+'" fill="rgb(48,48,48)" font-family="MS PGothic" font-weight="bold" font-size="'+carno_fontsize*scale
+	tags.push('<text x="'+(width-16-carno_width/2)*scale+'" y="'+(16+carno_width/2-4)*scale
+	+'" fill="rgb(48,48,48)" font-family="'+font_en+'" font-weight="bold" font-size="'+carno_fontsize*scale
 	+'px" text-anchor="middle" dominant-baseline="central" letter-spacing="-3">'
 	+carno+'</text>');
 
@@ -176,7 +178,7 @@ function tvm_draw() {
 	tags.push('<rect x="'+(width/2-sta_width/2)*scale
 	+'" y="'+64*scale+'" width="'+sta_width*scale
 	+'" height="'+sta_height*scale
-	+'" fill="rgb(255,255,255)" />');
+	+'" fill="white" />');
 
 	if (header_en) {
 		if (forinfo_tick >= 0 || last_stopping && stalist_en[0] == "Tōkyō") {
@@ -276,15 +278,142 @@ function tvm_draw() {
 	+'" height="'+border_width*scale
 	+'" fill="'+border_color1+'" />');
 
+	//Route Map
 	tags.push('<rect x="0" y="'+(header_height+border_width)*scale
 	+'" width="'+width*scale
 	+'" height="'+(height-header_height-border_width)*scale
 	+'" fill="'+bg_color+'" />');
 
+	//Yamanote Line
 	tags.push('<rect x="'+80*scale+'" y="'+(header_height+border_width+40)*scale
 	+'" width="'+(width-160)*scale
-	+'" height="'+(height-header_height-border_width-80)*scale
+	+'" height="'+(height-header_height-border_width-88)*scale
 	+'" stroke-width="'+48*scale+'" stroke="'+sta_color+'" fill="none" />');
+
+	for (var i = 0; i < 9; i++) {
+		tags.push('<rect x="'+(width/2-20-4*72+i*72)*scale+'" y="'+(header_height+border_width+20)*scale
+		+'" width="'+40*scale
+		+'" height="'+40*scale
+		+'" fill="'+(last_stopping?
+		i==0?stalist_ja[0]=="池袋"?"red":"white":
+		i==1?stalist_ja[0]=="大塚"?"red":"white":
+		i==2?stalist_ja[0]=="巣鴨"?"red":"white":
+		i==3?stalist_ja[0]=="駒込"?"red":"white":
+		i==4?stalist_ja[0]=="田端"?"red":"white":
+		i==5?stalist_ja[0]=="西日暮里"?"red":"white":
+		i==6?stalist_ja[0]=="日暮里"?"red":"white":
+		i==7?stalist_ja[0]=="鶯谷"?"red":"white":
+		stalist_ja[0]=="上野"?"red":"white"
+		:"white")+'" />');
+
+		var s = stalist_ja.indexOf("池袋") + i;
+		if (!last_stopping)
+			s += 1
+		if (s >= 29)
+			s -= 29
+		if (s > 0) {
+			var t = 0;
+			for (var u = 1; u <= s; u++)
+				t += taketimelist[last_stopping ? u : u - 1];
+			if (t <= 30)
+				tags.push('<text x="'+(width/2-4*72+i*72)*scale+'" y="'+(header_height+border_width+40-2)*scale
+				+'" fill="rgb(48,48,48)" font-family="'+font_en+'" font-weight="bold" font-size="'+taketime_fontsize*scale
+				+'px" text-anchor="middle" dominant-baseline="central" letter-spacing="-1">'
+				+t+'</text>');
+		}
+	}
+
+	for (var i = 0; i < 10; i++) {
+		tags.push('<rect x="'+(width/2+16-5*72+i*72)*scale+'" y="'+(height-68)*scale
+		+'" width="'+40*scale
+		+'" height="'+40*scale
+		+'" fill="'+(last_stopping?
+		i==0?stalist_ja[0]=="原宿"?"red":"white":
+		i==1?stalist_ja[0]=="渋谷"?"red":"white":
+		i==2?stalist_ja[0]=="恵比寿"?"red":"white":
+		i==3?stalist_ja[0]=="目黒"?"red":"white":
+		i==4?stalist_ja[0]=="五反田"?"red":"white":
+		i==5?stalist_ja[0]=="大崎"?"red":"white":
+		i==6?stalist_ja[0]=="品川"?"red":"white":
+		i==7?stalist_ja[0]=="田町"?"red":"white":
+		i==8?stalist_ja[0]=="浜松町"?"red":"white":
+		stalist_ja[0]=="新橋"?"red":"white"
+		:"white")+'" />');
+
+		var s = stalist_ja.indexOf("原宿") - i;
+		if (!last_stopping)
+			s += 1
+		if (s >= 29)
+			s -= 29
+		if (s > 0) {
+			var t = 0;
+			for (var u = 1; u <= s; u++)
+				t += taketimelist[last_stopping ? u : u - 1];
+			if (t <= 30)
+				tags.push('<text x="'+(width/2+36-5*72+i*72)*scale+'" y="'+(height-48-2)*scale
+				+'" fill="rgb(48,48,48)" font-family="'+font_en+'" font-weight="bold" font-size="'+taketime_fontsize*scale
+				+'px" text-anchor="middle" dominant-baseline="central" letter-spacing="-1">'
+				+t+'</text>');
+		}
+	}
+
+	for (var i = 0; i < 5; i++) {
+		tags.push('<rect x="'+60*scale+'" y="'+(header_height+border_width+104+i*72)*scale
+		+'" width="'+40*scale
+		+'" height="'+40*scale
+		+'" fill="'+(last_stopping?
+		i==0?stalist_ja[0]=="目白"?"red":"white":
+		i==1?stalist_ja[0]=="高田馬場"?"red":"white":
+		i==2?stalist_ja[0]=="新大久保"?"red":"white":
+		i==3?stalist_ja[0]=="新宿"?"red":"white":
+		stalist_ja[0]=="代々木"?"red":"white"
+		:"white")+'" />');
+
+		var s = stalist_ja.indexOf("目白") - i;
+		if (!last_stopping)
+			s += 1
+		if (s >= 29)
+			s -= 29
+		if (s > 0) {
+			var t = 0;
+			for (var u = 1; u <= s; u++)
+				t += taketimelist[last_stopping ? u : u - 1];
+			if (t <= 30)
+				tags.push('<text x="'+80*scale+'" y="'+(header_height+border_width+124+i*72-2)*scale
+				+'" fill="rgb(48,48,48)" font-family="'+font_en+'" font-weight="bold" font-size="'+taketime_fontsize*scale
+				+'px" text-anchor="middle" dominant-baseline="central" letter-spacing="-1">'
+				+t+'</text>');
+		}
+	}
+
+	for (var i = 0; i < 5; i++) {
+		tags.push('<rect x="'+(width-100)*scale+'" y="'+(header_height+border_width+88+i*72)*scale
+		+'" width="'+40*scale
+		+'" height="'+40*scale
+		+'" fill="'+(last_stopping?
+		i==0?stalist_ja[0]=="御徒町"?"red":"white":
+		i==1?stalist_ja[0]=="秋葉原"?"red":"white":
+		i==2?stalist_ja[0]=="神田"?"red":"white":
+		i==3?stalist_ja[0]=="東京"?"red":"white":
+		stalist_ja[0]=="有楽町"?"red":"white"
+		:"white")+'" />');
+
+		var s = stalist_ja.indexOf("御徒町") + i;
+		if (!last_stopping)
+			s += 1
+		if (s >= 29)
+			s -= 29
+		if (s > 0) {
+			var t = 0;
+			for (var u = 1; u <= s; u++)
+				t += taketimelist[last_stopping ? u : u - 1];
+			if (t <= 30)
+				tags.push('<text x="'+(width-80)*scale+'" y="'+(header_height+border_width+108+i*72-2)*scale
+				+'" fill="rgb(48,48,48)" font-family="'+font_en+'" font-weight="bold" font-size="'+taketime_fontsize*scale
+				+'px" text-anchor="middle" dominant-baseline="central" letter-spacing="-1">'
+				+t+'</text>');
+		}
+	}
 
 	tags.push('</svg>');
 	containerNode.innerHTML = tags;
@@ -331,10 +460,12 @@ function tvm_departure() {
 		stalist_ja.push(stalist_ja[0]);
 		stalist_en.push(stalist_en[0]);
 		stalist_hiragana.push(stalist_hiragana[0]);
+		taketimelist.push(taketimelist[0]);
 	}
 	stalist_ja.shift();
 	stalist_en.shift();
 	stalist_hiragana.shift();
+	taketimelist.shift();
 	tvm_stalist_0();
 }
 
@@ -405,7 +536,7 @@ function tvm_stalist_0() {
 		input.value = stalist_hiragana[a];
 		td.appendChild(input);
 		tr.appendChild(td);
-		td = document.createElement('td');
+		/*td = document.createElement('td');
 		input = document.createElement('input');
 		input.type = 'button';
 		input.id = 'remove_sta,'+a;
@@ -420,10 +551,10 @@ function tvm_stalist_0() {
 		input.addEventListener('click', function (event) {tvm_add_station_button(event.currentTarget.id.split(',')[1]);});
 		input.value = "+";
 		td.appendChild(input);
-		tr.appendChild(td);
+		tr.appendChild(td);*/
 		stalist_table.appendChild(tr);
 	}
-	tr = document.createElement('tr');
+	/*tr = document.createElement('tr');
 	td = document.createElement('td');
 	input = document.createElement('input');
 	input.type = 'button';
@@ -432,7 +563,7 @@ function tvm_stalist_0() {
 	input.value = "+";
 	td.appendChild(input);
 	tr.appendChild(td);
-	stalist_table.appendChild(tr);
+	stalist_table.appendChild(tr);*/
 }
 
 function tvm_stalist_1() {
