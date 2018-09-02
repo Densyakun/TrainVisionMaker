@@ -288,6 +288,11 @@ function tvm_draw() {
 	+'" height="'+(height-header_height-border_width)*scale
 	+'" fill="'+bg_color+'" />');
 
+	tags.push('<rect x="'+80*scale+'" y="'+(header_height+border_width+40)*scale
+	+'" width="'+(width-160)*scale
+	+'" height="'+(height-header_height-border_width-80)*scale
+	+'" stroke-width="'+48*scale+'" stroke="'+sta_color+'" fill="none" />');
+
 	tags.push('</svg>');
 	containerNode.innerHTML = tags;
 
